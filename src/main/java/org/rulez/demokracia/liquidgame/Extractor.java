@@ -13,16 +13,20 @@ import net.sf.saxon.TransformerFactoryImpl;
 
 public class Extractor {
     TransformerFactory factory;
+    private File       homedir;
     
-    Extractor() {
+    Extractor(File homedirectory) {
+        homedir = homedirectory;
         factory = TransformerFactoryImpl.newInstance();
     }
     
     public void extract() throws TransformerException {
-        Source xslt = new StreamSource(new File("extract.xslt"));
+        Source xslt = new StreamSource(new File(homedir, "extract.xslt"));
         Transformer transformer;
         transformer = factory.newTransformer(xslt);
-        Source text = new StreamSource(new File("LiquidGame.archimate"));
-        transformer.transform(text, new StreamResult(new File("output.xml")));
+        Source text = new StreamSource(
+                new File(homedir, "LiquidGame.archimate"));
+        transformer.transform(text, new StreamResult(new File(homedir,
+                "output.xml")));// FIXME do we need it?
     }
 }

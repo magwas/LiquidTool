@@ -3,6 +3,8 @@ package org.rulez.demokracia.liquidgame;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.xml.bind.DatatypeConverter;
@@ -28,21 +30,25 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Compiler {
+    File            homedir;
     Document        doc;
     Transformer     transformer;
     private Element diagramobj;
     private Element relations;
+    List<LinkData>  linksleft;
     
-    Compiler() throws ParserConfigurationException,
+    Compiler(File homedirectory) throws ParserConfigurationException,
             TransformerConfigurationException {
+        homedir = homedirectory;
         DocumentBuilderFactory docFactory = DocumentBuilderFactory
                 .newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
         doc = docBuilder.newDocument();
         
-        Source xslt = new StreamSource(new File("file2doc.xslt"));
+        Source xslt = new StreamSource(new File(homedirectory, "file2doc.xslt"));
         TransformerFactory factory = TransformerFactoryImpl.newInstance();
         transformer = factory.newTransformer(xslt);
+        linksleft = new ArrayList<LinkData>();
         
     }
     
@@ -73,7 +79,7 @@ public class Compiler {
         diagramobj.setAttribute("xsi:type", "archimate:ArchimateDiagramModel");
         views.appendChild(diagramobj);
         
-        walk(bo, null, new File("world"));
+        walk(bo, null, new File(homedir, "world"));
         
         relations = doc.createElement("folder");
         relations.setAttribute("name", "Relations");
@@ -81,6 +87,7 @@ public class Compiler {
         relations.setAttribute("type", "relations");
         rootElement.appendChild(relations);
         
+        doLink();
         buildResourceHierarchy();
         
     }
@@ -96,7 +103,8 @@ public class Compiler {
                 "{http://xml.apache.org/xslt}indent-amount", "2");
         DOMSource source = new DOMSource(doc);
         
-        StreamResult result = new StreamResult(new File("testing.archimate"));
+        StreamResult result = new StreamResult(new File(homedir,
+                "LiquidGame.archimate"));
         transformer.transform(source, result);
         
         System.out.println("Done");
@@ -139,24 +147,42 @@ public class Compiler {
         return doc.importNode(sr.getNode().getFirstChild(), true);
     }
     
-    private String nameToId(String name) throws NoSuchAlgorithmException {
-        System.out.println(name);
+    private String pathToId(String s) throws NoSuchAlgorithmException {
+        System.out.println("id from " + s);
         MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-        messageDigest.update(name.getBytes());
+        messageDigest.update(s.getBytes());
         return DatatypeConverter.printBase64Binary(messageDigest.digest());
+        
+    }
+    
+    private String fileToId(File f) throws NoSuchAlgorithmException {
+        System.out.println(f.getAbsolutePath());
+        String relpath = f.getAbsolutePath().substring(
+                homedir.getAbsolutePath().length());
+        return pathToId(relpath);
+    }
+    
+    private void linking(Element folderobj, String ref, Thing parentobj) {
+        linksleft.add(new LinkData(folderobj, ref, parentobj));
+    }
+    
+    private void doLink() throws DOMException, NoSuchAlgorithmException {
+        for (LinkData ld : linksleft) {
+            associate(ld.folderobj, Thing.getById(ld.ref), ld.parentobj);
+        }
+        
     }
     
     private Thing convertToArchi(Element folderobj, Thing parentobj, File f)
             throws TransformerException, DOMException, NoSuchAlgorithmException {
         Element ee = (Element) fileToDoc(f);
         if (ee.getLocalName() == "link") {
-            // cutting "./"
-            String ref = nameToId(ee.getAttribute("ref").substring(2));
-            associate(folderobj, Thing.getById(ref), parentobj);
+            String ref = pathToId(ee.getAttribute("ref"));
+            linking(folderobj, ref, parentobj);
             return null;
         } else {
             folderobj.appendChild(ee);
-            ee.setAttribute("id", nameToId(f.getPath()));
+            ee.setAttribute("id", fileToId(f));
             ee.setAttribute("name", f.getName());
             Thing r = new Thing(ee);
             placeElement(r);
@@ -234,16 +260,16 @@ public class Compiler {
     
     private void buildResourceHierarchy() throws TransformerException,
             NoSuchAlgorithmException {
-        File[] fl = new File("resourcehierarchy").listFiles();
+        File[] fl = new File(homedir, "resourcehierarchy").listFiles();
         for (File f : fl) {
             Source text = new StreamSource(f);
             DOMResult sr = new DOMResult();
             transformer.transform(text, sr);
             Element c = (Element) sr.getNode().getFirstChild();
-            Thing container = Thing.getById(nameToId(c
-                    .getAttribute("container").substring(2)));
-            Thing contained = Thing.getById(nameToId(c
-                    .getAttribute("contained").substring(2)));
+            Thing container = Thing.getById(pathToId(c
+                    .getAttribute("container")));// FIXME
+            Thing contained = Thing.getById(pathToId(c
+                    .getAttribute("contained")));// FIXME
             associate(relations, contained, container,
                     "archimate:CompositionRelationship");
         }
