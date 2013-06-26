@@ -70,7 +70,10 @@ public class InitializeAction extends GuiAction {
         doLayout(userlabel, 300);
         
         final Text user_text = new Text(dialog, SWT.BORDER);
-        user_text.setText(getUserName());
+        String username = getUserName();
+        if (username != null) {
+            user_text.setText(username);
+        }
         doLayout(user_text, 300);
         
         Label passwordlabel = new Label(dialog, SWT.NONE);
@@ -80,7 +83,10 @@ public class InitializeAction extends GuiAction {
         final Text password_text = new Text(dialog, SWT.BORDER);
         password_text.setSize(200, 30);
         password_text.setEchoChar('*');
-        password_text.setText(getPassword());
+        String password = getPassword();
+        if (password != null) {
+            password_text.setText(password);
+        }
         doLayout(password_text, 300);
         
         Label emaillabel = new Label(dialog, SWT.NONE);
@@ -88,7 +94,10 @@ public class InitializeAction extends GuiAction {
         doLayout(emaillabel, 300);
         
         final Text email_text = new Text(dialog, SWT.BORDER);
-        email_text.setText(getEmail());
+        String email = getEmail();
+        if (null != email) {
+            email_text.setText(email);
+        }
         doLayout(email_text, 300);
         
         Label pathlabel = new Label(dialog, SWT.NONE);
