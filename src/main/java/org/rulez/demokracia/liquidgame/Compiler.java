@@ -76,6 +76,7 @@ public class Compiler {
         diagramobj = doc.createElement("element");
         diagramobj.setAttribute("name", "Default View");
         diagramobj.setAttribute("id", "defaultview");
+        diagramobj.setAttribute("connectionRouterType", "1");
         diagramobj.setAttribute("xsi:type", "archimate:ArchimateDiagramModel");
         views.appendChild(diagramobj);
         

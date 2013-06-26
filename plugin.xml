@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="liquidgame.actionSet"
+            label="Liquid Game actionSet"
+            visible="true">
+         <menu
+               id="liquidGameMenu"
+               label="LiquidGame">
+            <separator
+                  name="liquidGameGroup">
+            </separator>
+         </menu>
+         <action
+               class="org.rulez.demokracia.liquidgame.InitializeAction"
+               icon="icons/sample.gif"
+               id="liquidgame.actions.InitializeAction"
+               label="Játékos felvétele"
+               menubarPath="liquidGameMenu/liquidGameGroup"
+               toolbarPath="liquidGameGroup"
+               tooltip="Ezzel veszed fel a játékos adatait">
+         </action>
+         <action
+               class="org.rulez.demokracia.liquidgame.BeginAction"
+               icon="icons/sample.gif"
+               id="liquidgame.actions.BeginAction"
+               label="Lépés elkezdése"
+               menubarPath="liquidGameMenu/liquidGameGroup"
+               toolbarPath="liquidGameGroup"
+               tooltip="Így lehet elkezdeni egy lépést">
+         </action>
+         <action
+               class="org.rulez.demokracia.liquidgame.CommitAction"
+               icon="icons/sample.gif"
+               id="liquidgame.actions.CommitAction"
+               label="Lépés elküldése"
+               menubarPath="liquidGameMenu/liquidGameGroup"
+               toolbarPath="liquidGameGroup"
+               tooltip="Ezzel küldöd fel a lépést a játékba">
+         </action>
+      </actionSet>
+   </extension>
+
+</plugin>
